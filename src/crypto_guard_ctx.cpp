@@ -68,10 +68,7 @@ namespace CryptoGuard {
             if (!EVP_CipherUpdate(ctx.get(), outBuf.data(), &outLen, inBuf.data(), static_cast<int>(bytesRead))) {
                 throw std::runtime_error("Encryption failed during update");
             }
-            std::cout << "--------------------------------1" << std::endl;
-            std::cout << inBuf.data() << std::endl;
-            std::cout << outBuf.data() << std::endl;
-            std::cout << "--------------------------------2" << std::endl;
+
             if (outStream.bad()) {
                 throw std::runtime_error("Error writing to output stream");
             }
