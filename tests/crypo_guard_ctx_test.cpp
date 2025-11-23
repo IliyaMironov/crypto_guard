@@ -110,3 +110,49 @@ TEST(EncryptTest, BasicDecryption) {
     EXPECT_FALSE(decryptedData.empty());
     EXPECT_EQ("Hello, World!123", decryptedData);
 }
+
+TEST(EncryptTest, DecryptionWithWrongPassword) {
+    CryptoGuard::CryptoGuardCtx ctx;
+    std::stringstream input;
+    input << "Secret message";
+    
+    std::stringstream encrypted;
+    std::string correctPassword = "correct_password";
+    std::string wrongPassword = "wrong_password";
+    
+    ctx.EncryptFile(input, encrypted, correctPassword);
+    encrypted.seekg(0);
+
+    std::stringstream decrypted;
+    ctx.DecryptFile(encrypted, decrypted, wrongPassword);
+    decrypted.seekg(0);
+    std::string decryptedData((std::istreambuf_iterator<char>(decrypted)),
+                             std::istreambuf_iterator<char>());
+    
+    EXPECT_NE("Secret message", decryptedData);
+}
+
+TEST(EncryptTest, DecryptionWithLargeData) {
+    CryptoGuard::CryptoGuardCtx ctx;
+    std::stringstream input;
+    std::string largeData;
+    for (int i = 0; i < 1000; ++i) {
+        largeData += "This is a test line number " + std::to_string(i) + ". ";
+    }
+    input << largeData;
+    
+    std::stringstream encrypted;
+    std::string password = "test_password_large";
+    
+    ctx.EncryptFile(input, encrypted, password);
+    encrypted.seekg(0);
+
+    std::stringstream decrypted;
+    ctx.DecryptFile(encrypted, decrypted, password);
+    decrypted.seekg(0);
+    std::string decryptedData((std::istreambuf_iterator<char>(decrypted)),
+                             std::istreambuf_iterator<char>());
+    EXPECT_FALSE(decryptedData.empty());
+    EXPECT_EQ(largeData, decryptedData);
+    EXPECT_EQ(largeData.length(), decryptedData.length());
+}
