@@ -18,8 +18,8 @@ namespace CryptoGuard {
 
     class CryptoGuardCtx::Impl {
     public:
-        Impl();
-        ~Impl();
+        Impl() = default;
+        ~Impl() = default;
         void EncryptFile(std::iostream &inStream, std::iostream &outStream, std::string_view password);
         void DecryptFile(std::iostream &inStream, std::iostream &outStream, std::string_view password);
         std::string CalculateChecksum(std::iostream &inStream);
@@ -27,9 +27,6 @@ namespace CryptoGuard {
     private:
         void CryptFile(std::iostream &inStream, std::iostream &outStream, std::string_view password, int encrypt);
     };
-
-    CryptoGuardCtx::Impl::Impl() {};
-    CryptoGuardCtx::Impl::~Impl() {};
     
     void CryptoGuardCtx::Impl::CryptFile(std::iostream &inStream, std::iostream &outStream, std::string_view password, int encrypt) {
         if (inStream.bad()) {
@@ -75,8 +72,13 @@ namespace CryptoGuard {
             outStream.write(reinterpret_cast<const char*>(outBuf.data()), outLen);
         }
 
-        if (!EVP_CipherFinal_ex(ctx.get(), outBuf.data() + outLen, &outLen)) {
+        int finalLen = 0;
+        if (!EVP_CipherFinal_ex(ctx.get(), outBuf.data(), &finalLen)) {
             throw std::runtime_error("Encryption failed during finalization");
+        }
+
+        if (finalLen > 0) {
+            outStream.write(reinterpret_cast<const char*>(outBuf.data()), finalLen);
         }
     }
 
